@@ -1,54 +1,70 @@
-import random
+from roll import Roll, Result
+from agent import Agent, SimpleAgent
+from typing import List
 
 
+def play_single_turn(agent: Agent, max_rolls: int = 3, worst_prev_result: Result = None, verbose: bool = False):
+    assert 1 <= max_rolls <= 3, "max rolls needs to be between 1 and 3"
+    assert worst_prev_result is not None or max_rolls == 3, "max rolls needs to be 3 if first player"
 
-class MoveChoice:
-    def __init__(self, keep_first, keep_second, keep_third, flip_a_one = False):
-        self.keep_first = keep_first
-        self.keep_second = keep_second
-        self.keep_third = keep_third
-        self.flip_a_one = flip_a_one
-   
-   
+    if verbose:
+        print(f"playing with a maximum of {max_rolls} rolls, trying to beat {worst_prev_result}")
 
-class GameState:
-    def __init__(self, *actors):
-        self.actors = actors
-        self.current_player_index = 0
-        
-    def get_current_player(self):
-        return self.actors[self.current_player_index]
-    
-    def apply_move(self, actor, move):
-        pass
-    
-    def is_valid_move(self, move):
-        return True
-    
+    roll = Roll.new_roll()
+    num_rolls = 1
+    if verbose:
+        print("1. roll:", roll)
 
-class Actor:
-    def __init__(self, name):
-        self.name = name
+    while num_rolls < max_rolls:
 
-class Game:
-    def __init__(self, *actors):
-        self.game_state = GameState(actors)
-    
-    def step(self, verbose=False):
-        actor = self.game_state.get_current_player()
-        if verbose: print(f"its {actor}'s turn")
-        choice = actor.choose_move(self.game_state)
-        if verbose: print(f"{actor} chose {choice}")
-        if not self.game_state.is_valid_move(choice):
-            raise Exception("Invalid move")
-        self.apply_move(actor, choice)
-        if verbose: print("the game state is now:", self.game_state)
+        action = agent.play(roll, num_rolls, max_rolls - num_rolls, worst_prev_result, verbose=verbose)
+
+        if all(action.keep_dice):
+            if verbose:
+                print("stopping")
+            break
+        if action.flip_third:
+            roll = roll.reroll_flipping_third()
+            if verbose:
+                print("rerolling flipping third")
+        else:
+            roll = roll.reroll_keeping(*action.keep_dice)
+            if verbose:
+                print(f"rerolling keeping {action.keep_dice} dice")
+        num_rolls += 1
+        if verbose:
+            print(f"{num_rolls}. roll:", roll)
+            if num_rolls == max_rolls:
+                print(f"reached maximum of {max_rolls} rolls")
+
+    return Result(agent.name, roll, num_rolls)
+
+def play_single_round(players: List[Agent], verbose: bool = False) -> List[Result]:
+    first, rest = players[0], players[1:]
+    first_result = play_single_turn(first, verbose=verbose)
+    max_rolls = first_result.num_rolls
+    results = [first_result]
+    if verbose:
+        print()
+        print(f"first player rolled {max_rolls} times, this is the max number of rolls for this round")
+        print()
+
+    for player in rest:
+        results.append(play_single_turn(player, max_rolls=max_rolls, worst_prev_result=min(results), verbose=verbose))
+        if verbose:
+            print()
+
+    if verbose:
+        print(f"round completed, winner: {max(results)}, loser: {min(results)}, round value: {max(results).value()}")
+    return results
+
 
 def main():
-    game = Game(Actor("David"), Actor("Felix"), Actor("Julian"), Actor("Zorro"))
-    while True:
-        game.step()
-        input()
+    players = [SimpleAgent("David"), SimpleAgent("Felix"), SimpleAgent("Julian")]
+    for _ in range(1000):
+        results = play_single_round(players, verbose=False)
+        print("winner:", max(results))
+
 
 if __name__ == "__main__":
     main()
