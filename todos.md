@@ -10,8 +10,11 @@
 # ideas
 
 - [ ] interactive agent that allows user to join as player
+  - [ ] i18n for different local dialects (including local rules?)
+  - [ ] ML for replicating the users playstyle
 - [ ] gui mode with simple graphics to play as game
 - [ ] live statistical evaluation during large simulation runs
+- [ ] ML for creating the best strategy
 
 # paper
 
