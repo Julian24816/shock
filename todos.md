@@ -1,7 +1,8 @@
 # shock simulation todos
 
-- [ ] finish implementing simple game with any rules
-- [ ] simulate 10k games
+- [x] finish implementing simple game with any rules
+- [x] simulate 10k games
+- [ ] implement different agents
 - [ ] support different game rules
 - [ ] profile performance
 - [ ] simulate 1M games each with different rulesets & agent combinations

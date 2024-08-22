@@ -1,7 +1,7 @@
 import functools
-import math
 import random
 import enum
+
 
 class RollType(enum.IntEnum):
     SHOCK_OUT = 5
@@ -9,6 +9,7 @@ class RollType(enum.IntEnum):
     TRIPLET = 3
     STRAIGHT = 2
     HIGHEST = 1
+
 
 @functools.total_ordering
 class Roll:
@@ -35,7 +36,7 @@ class Roll:
             self.dice[0] if first else random.randint(1, 6),
             self.dice[1] if second else random.randint(1, 6),
             self.dice[2] if third else random.randint(1, 6),
-            ])
+        ])
 
     def is_flipping_third_allowed(self):
         return self.dice[0] == self.dice[1] == 6
@@ -56,32 +57,3 @@ class Roll:
 
     def __str__(self):
         return f"{self.type().name}: {self.dice}"
-    
-
-@functools.total_ordering
-class Result:
-    def __init__(self, name: str, roll: Roll, num_rolls: int):
-        self.name = name
-        self.roll = roll
-        self.num_rolls = num_rolls
-    
-    def __eq__(self, other):
-        return self.roll == other.roll and self.num_rolls == other.num_rolls
-    
-    def __lt__(self, other):
-        return (self.roll, -self.num_rolls) < (other.roll, -other.num_rolls)
-    
-    def __str__(self):
-        return f"{self.name}: {self.roll} ({self.num_rolls} rolls)"
-    
-    def value(self) -> int:
-        type = self.roll.type()
-        if type == RollType.SHOCK_OUT:
-            return 13
-        elif type == RollType.SHOCK:
-            return self.roll.dice[0]
-        elif type == RollType.TRIPLET or type == RollType.STRAIGHT:
-            return 2
-        else:
-            return 1
-    
